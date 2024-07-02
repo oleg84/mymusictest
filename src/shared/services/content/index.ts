@@ -1,7 +1,5 @@
 import { useMutation, useQuery } from "react-query";
-
 import { request } from "~/shared/libs";
-import { Royalty } from "~/shared/stores/root";
 
 type UseCreateNewContentPayload = {
   title: string;
@@ -9,37 +7,27 @@ type UseCreateNewContentPayload = {
   image: string;
   description: string;
   price: string;
-  resaleLicensePrice: string; // nanoTON bignum (default = 0)
+  resaleLicensePrice: string;
   allowResale: boolean;
   authors: string[];
-  royaltyParams: Royalty[];
+  royaltyParams: {
+    address: string;
+    value: number; // 10000 = 100%
+  }[];
 };
 
 export const useCreateNewContent = () => {
   return useMutation(
     ["create-new-content"],
     (payload: UseCreateNewContentPayload) => {
-      return request.post<{
-        message: string;
-      }>("/blockchain.sendNewContentMessage", payload);
-    },
+      return request.post<{ message: string }>("/api/v1/blockchain.sendNewContentMessage", payload);
+    }
   );
 };
 
-// export const usePurchaseContent = () => {
-//   return useMutation(
-//     ["purchase-content"],
-//     (payload: { content_address: string; price: string }) => {
-//       return request.post<{
-//         message: string;
-//       }>("/blockchain.sendPurchaseContentMessage", payload);
-//     },
-//   );
-// };
-
 export const useViewContent = (contentId: string) => {
   return useQuery(["view", "content", contentId], () => {
-    return request.get(`/content.view/${contentId}`);
+    return request.get(`https://my-public-node-1.projscale.dev/api/v1/content/${contentId}`);
   });
 };
 
@@ -53,10 +41,10 @@ export const usePurchaseContent = () => {
       content_address: string;
       license_type: "listen" | "resale";
     }) => {
-      return request.post("/blockchain.sendPurchaseContentMessage", {
+      return request.post("https://my-public-node-1.projscale.dev/api/v1/blockchain.sendPurchaseContentMessage", {
         content_address,
         license_type,
       });
-    },
+    }
   );
 };
